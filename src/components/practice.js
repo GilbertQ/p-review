@@ -147,7 +147,7 @@ const QuizComponent = () => {
         <Typography variant="body1">Questions: {quizData ? quizData.length : 0}</Typography>
         <Typography variant="body1">Reviewed: {questionsReviewed}</Typography>
         <Typography variant="body1">Correct: {correctAnswers}</Typography>
-        <Typography variant="body1">Percentage Correct:  {percentageCorrect}%</Typography>
+        <Typography variant="body1">Percentage Correct: {percentageCorrect}%</Typography>
         <Typography variant="body1">
   Percentage Reviewed: 
   {((questionsReviewed / quizData?.length) * 100).toFixed(2)}
