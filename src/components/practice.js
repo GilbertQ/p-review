@@ -24,7 +24,7 @@ const QuizComponent = () => {
 
   const selectRandomQuestion = (data) => {
     const unusedQuestions = data.filter((_, index) => !usedQuestions.includes(index));
-    
+    console.log("pasa por aqui",data.length)
     if (unusedQuestions.length === 0) {
       // All questions have been used, reset the usedQuestions
       setUsedQuestions([]);
@@ -109,8 +109,6 @@ const QuizComponent = () => {
   const explanationIndex = currentQuestion.findIndex(line => line.startsWith("Answer"));
   const explanationText = '\n' + currentQuestion.slice(explanationIndex).join(' ')
   .replace('Explanation', '\n\nExplanation:\n\n')+ '\n';
-  
-  console.log(explanationText);
 
   const percentageCorrect = questionsReviewed > 0 ? ((correctAnswers / questionsReviewed) * 100).toFixed(2) : 0;
 
@@ -134,21 +132,28 @@ const QuizComponent = () => {
         ))}
       </FormControl>
       {!showExplanation ? (
-        <Button variant="contained" onClick={handleConfirm}>Confirm</Button>
+        <Button variant="contained" color="success" onClick={handleConfirm}>Confirm</Button>
       ) : (
         <>
+        <Button variant="contained" onClick={handleContinue}>Continue</Button>
           <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
   {explanationText}
 </Typography>
-          <Button variant="contained" onClick={handleContinue}>Continue</Button>
+          
         </>
       )}
 
-      <Box mt={4}>
-        <Typography variant="body1">Number of Questions Reviewed: {questionsReviewed}</Typography>
-        <Typography variant="body1">Number of Questions Correctly Answered: {correctAnswers}</Typography>
-        <Typography variant="body1">Percentage of Correctly Answered Questions: {percentageCorrect}%</Typography>
-      </Box>
+        <Box mt={4} display="flex" justifyContent="space-between" width="100%">
+        <Typography variant="body1">Questions: {quizData ? quizData.length : 0}</Typography>
+        <Typography variant="body1">Reviewed: {questionsReviewed}</Typography>
+        <Typography variant="body1">Correct: {correctAnswers}</Typography>
+        <Typography variant="body1">Percentage Correct:  {percentageCorrect}%</Typography>
+        <Typography variant="body1">
+  Percentage Reviewed: 
+  {((questionsReviewed / quizData?.length) * 100).toFixed(2)}
+  %
+</Typography>
+        </Box>
     </Box>
   );
 };
