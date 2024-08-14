@@ -14,6 +14,10 @@ const QuizComponent = () => {
   const [revisitedCorrectAnswers, setRevisitedCorrectAnswers] = useState(0);
   const [isRevisitingWrongAnswers, setIsRevisitingWrongAnswers] = useState(false);
   const [revisitCycleCount, setRevisitCycleCount] = useState(0);
+  const [wrongAnswersReviewList, setWrongAnswersReviewList] = useState([]);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [reviewCycleCount, setReviewCycleCount] = useState(0);
+  const [correctlyAnsweredInReview, setCorrectlyAnsweredInReview] = useState({});
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -76,53 +80,6 @@ const QuizComponent = () => {
     );
   };
 
-  const handleConfirm = () => {
-    setShowExplanation(true);
-
-    if (isRevisitingWrongAnswers) {
-      setRevisitedQuestionsReviewed(revisitedQuestionsReviewed + 1);
-    } else {
-      setQuestionsReviewed(questionsReviewed + 1);
-    }
-
-    const correctAnswerLine = currentQuestion.find(line => line.startsWith("Answer"));
-    const correctAnswersList = correctAnswerLine
-      .replace("Answer:", "")
-      .replace(".", "")
-      .split(",")
-      .map(ans => ans.trim());
-
-    const selectedAnswerChars = selectedAnswers.map(answer => answer.charAt(0));
-
-    const allCorrect = correctAnswersList.length === selectedAnswerChars.length &&
-      correctAnswersList.every(ans => selectedAnswerChars.includes(ans));
-
-    if (allCorrect) {
-      if (isRevisitingWrongAnswers) {
-        setRevisitedCorrectAnswers(revisitedCorrectAnswers + 1);
-      } else {
-        setCorrectAnswers(correctAnswers + 1);
-      }
-    } else {
-      setWronglyAnsweredQuestions(prev => [...prev, currentQuestion]);
-    }
-
-    const currentPercentageCorrect = isRevisitingWrongAnswers
-      ? ((revisitedCorrectAnswers + (allCorrect ? 1 : 0)) / (revisitedQuestionsReviewed + 1)) * 100
-      : ((correctAnswers + (allCorrect ? 1 : 0)) / (questionsReviewed + 1)) * 100;
-
-    if (!isRevisitingWrongAnswers && currentPercentageCorrect < 80 && wronglyAnsweredQuestions.length > 5) {
-      setIsRevisitingWrongAnswers(true);
-      setUsedQuestions([]);
-      setRevisitedQuestionsReviewed(0);
-      setRevisitedCorrectAnswers(0);
-    }
-  };
-
-  const handleContinue = () => {
-    selectRandomQuestion(quizData);
-  };
-
   if (!quizData) {
     return (
       <Box>
@@ -164,6 +121,79 @@ const QuizComponent = () => {
     : questionsReviewed > 0
       ? ((correctAnswers / questionsReviewed) * 100).toFixed(2)
       : 0;
+
+      const selectNextQuestion = () => {
+        if (isRevisitingWrongAnswers) {
+          if (currentReviewIndex < wrongAnswersReviewList.length - 1) {
+            setCurrentReviewIndex(currentReviewIndex + 1);
+            setCurrentQuestion(wrongAnswersReviewList[currentReviewIndex + 1]);
+          } else {
+            // End of review cycle
+            const allCorrect = Object.values(correctlyAnsweredInReview).every(v => v);
+            if (allCorrect || reviewCycleCount >= 2) {
+              // End review mode
+              setIsRevisitingWrongAnswers(false);
+              setWronglyAnsweredQuestions([]);
+              setReviewCycleCount(0);
+              setCurrentReviewIndex(0);
+              setCorrectlyAnsweredInReview({});
+            } else {
+              // Start next review cycle
+              setReviewCycleCount(reviewCycleCount + 1);
+              setCurrentReviewIndex(0);
+              setCurrentQuestion(wrongAnswersReviewList[0]);
+              setCorrectlyAnsweredInReview({});
+            }
+          }
+        } else {
+          selectRandomQuestion(quizData);
+        }
+      };
+    
+      const handleConfirm = () => {
+        setShowExplanation(true);
+    
+        const correctAnswerLine = currentQuestion.find(line => line.startsWith("Answer"));
+        const correctAnswersList = correctAnswerLine
+          .replace("Answer:", "")
+          .replace(".", "")
+          .split(",")
+          .map(ans => ans.trim());
+    
+        const selectedAnswerChars = selectedAnswers.map(answer => answer.charAt(0));
+    
+        const allCorrect = correctAnswersList.length === selectedAnswerChars.length &&
+          correctAnswersList.every(ans => selectedAnswerChars.includes(ans));
+    
+        if (isRevisitingWrongAnswers) {
+          setCorrectlyAnsweredInReview({
+            ...correctlyAnsweredInReview,
+            [currentReviewIndex]: allCorrect
+          });
+        } else {
+          setQuestionsReviewed(questionsReviewed + 1);
+          if (allCorrect) {
+            setCorrectAnswers(correctAnswers + 1);
+          } else {
+            setWronglyAnsweredQuestions(prev => [...prev, currentQuestion]);
+          }
+        }
+    
+        // Check if we should enter review mode
+        if (!isRevisitingWrongAnswers && 
+            ((correctAnswers + (allCorrect ? 1 : 0)) / (questionsReviewed + 1)) * 100 < 80 && 
+            wronglyAnsweredQuestions.length + (allCorrect ? 0 : 1) > 5) {
+          setIsRevisitingWrongAnswers(true);
+          setWrongAnswersReviewList([...wronglyAnsweredQuestions, ...(allCorrect ? [] : [currentQuestion])]);
+          setCurrentReviewIndex(0);
+          setReviewCycleCount(0);
+          setCorrectlyAnsweredInReview({});
+        }
+      };
+    
+      const handleContinue = () => {
+        selectNextQuestion();
+      };    
 
   return (
     <Box>
@@ -209,9 +239,10 @@ const QuizComponent = () => {
 
       {isRevisitingWrongAnswers && (
         <Box mt={4} display="flex" flexDirection="column" width="100%">
-          <Typography variant="h6">Revisit Cycle: {revisitCycleCount + 1} / 2</Typography>
-          <Typography variant="body1">Questions in this Cycle: {revisitedQuestionsReviewed}</Typography>
-          <Typography variant="body1">Correct in this Cycle: {revisitedCorrectAnswers}</Typography>
+          <Typography variant="h6">Review Cycle: {reviewCycleCount + 1} / 3</Typography>
+          <Typography variant="body1">Questions in this Cycle: {wrongAnswersReviewList.length}</Typography>
+          <Typography variant="body1">Current Question: {currentReviewIndex + 1} / {wrongAnswersReviewList.length}</Typography>
+          <Typography variant="body1">Correctly Answered in this Cycle: {Object.values(correctlyAnsweredInReview).filter(Boolean).length}</Typography>
         </Box>
       )}
     </Box>
@@ -219,10 +250,3 @@ const QuizComponent = () => {
 };
 
 export default QuizComponent;
-
-
-
-
-
-
-

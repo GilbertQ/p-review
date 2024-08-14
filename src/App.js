@@ -1,6 +1,6 @@
 
 import './App.css';
-import QuizComponent from './components/practice';
+import QuizComponent from './components/practicep';
 
 function App() {
   return (
