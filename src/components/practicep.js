@@ -20,7 +20,7 @@ const QuizComponent = () => {
     return (
         <div>
           <p>Those were 3 times</p>
-          <p>That you failed 5 questions</p>
+          <p>That you failed 3 questions</p>
           <p>Give yourself a Rest Time</p>          
           <p>In order to improve your Learning</p>          
           <p>Thanks!</p>          
@@ -28,6 +28,14 @@ const QuizComponent = () => {
       );
   }
 
+  const startReviewMode = () => {
+    setIsReviewingWrongAnswers(true);
+    setReviewIndex(0);
+    setCurrentQuestion(wrongAnswers[0].questionDetails);
+    setSelectedAnswers([]);
+    setShowExplanation(false);
+  };
+  
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -77,40 +85,45 @@ const QuizComponent = () => {
   };
 
   const handleConfirm = () => {
-    setShowExplanation(true);
-    setQuestionsReviewed((prev) => prev + 1);
-
     const correctAnswersList = getCorrectAnswers(currentQuestion);
     const selectedAnswerChars = selectedAnswers.map((answer) => answer.charAt(0));
 
     const isCorrect = correctAnswersList.length === selectedAnswerChars.length &&
                       correctAnswersList.every((ans) => selectedAnswerChars.includes(ans));
 
-    if (!isCorrect) {
-      setWrongAnswers((prev) => [...prev, { questionDetails: currentQuestion, selectedAnswers }]);
-    } else {
-      setCorrectAnswers((prev) => prev + 1);
-    }
-  };
+    setQuestionsReviewed((prev) => prev + 1);
 
-  const handleContinue = () => {
-    if (isReviewingWrongAnswers) {
-      if (reviewIndex < wrongAnswers.length - 1) {
-        setReviewIndex((prev) => prev + 1);
-        setCurrentQuestion(wrongAnswers[reviewIndex + 1].questionDetails);
-      } else {
-        setIsReviewingWrongAnswers(false);
-        setReviewIndex(0);
-        setWrongAnswers([]);
-        selectRandomQuestion(quizData);
-        setagain((prev) => prev + 1);
-      }
+    if (!isCorrect) {
+        setWrongAnswers((prev) => [...prev, { questionDetails: currentQuestion, selectedAnswers }]);
+        setShowExplanation(true);  // Show explanation only if the answer is wrong
     } else {
-      selectRandomQuestion(quizData);
+        setCorrectAnswers((prev) => prev + 1);
+        handleContinue(); // Automatically continue to the next question if the answer is correct
     }
-    setSelectedAnswers([]);
-    setShowExplanation(false);
-  };
+};
+
+const handleContinue = () => {
+  if (isReviewingWrongAnswers) {
+      setReviewIndex((prev) => {
+        const nextIndex = prev + 1;
+        if (nextIndex < wrongAnswers.length) {
+            setCurrentQuestion(wrongAnswers[nextIndex].questionDetails);
+        } else {
+            setIsReviewingWrongAnswers(false);
+            setReviewIndex(0);
+            setWrongAnswers([]);
+            selectRandomQuestion(quizData);
+            setagain((prev) => prev + 1);
+        }
+        return nextIndex;
+      });
+  } else {
+      selectRandomQuestion(quizData);
+  }
+  setSelectedAnswers([]);
+  setShowExplanation(false); // Reset explanation visibility for the next question
+};
+
 
   const getCorrectAnswers = (question) => {
     const correctAnswerLine = question.find((line) => line.startsWith("Answer"));
@@ -121,8 +134,8 @@ const QuizComponent = () => {
   const answerOptions = getAnswerOptions(currentQuestion);
   const explanationText = getExplanationText(currentQuestion);
   const percentageCorrect = questionsReviewed > 0 ? ((correctAnswers / questionsReviewed) * 100).toFixed(2) : 0;
-  const shouldShowRepaso = percentageCorrect < 80 && wrongAnswers.length > 5;
-
+  const shouldShowRepaso = percentageCorrect < 80 && wrongAnswers.length > 2;
+  console.log(wrongAnswers)
   return (
     <Box>
       {!quizData ? (
@@ -187,15 +200,20 @@ const QuizComponent = () => {
   function renderReviewPrompt() {
     return (
       <Box id="repaso">
-        <Typography variant="h1">More than 5 wrong answers and a score under 80%</Typography>
-        <Button variant="contained" color="primary" onClick={() => setIsReviewingWrongAnswers(true)}>
-          Review Wrong Answers
-        </Button>
+        <Typography variant="h1">Those were 3 wrong answers and a score under 80%</Typography>
+        <Button variant="contained" color="primary" onClick={startReviewMode}>
+  Review Wrong Answers
+</Button>
       </Box>
     );
   }
 
   function renderWrongAnswerReview() {
+    const currentReview = wrongAnswers[reviewIndex];
+    const questionText = currentReview?.questionDetails.slice(0, currentReview?.questionDetails.findIndex((line) => line.startsWith("A."))).join(' ') || '';
+    const answerOptions = getAnswerOptions(currentReview?.questionDetails);
+    const explanationText = getExplanationText(currentReview?.questionDetails);
+  
     return (
       <Box id="preguntas">
         <Typography variant="h6">{questionText}</Typography>
@@ -230,18 +248,21 @@ const QuizComponent = () => {
           </>
         )}
         <Box mt={4} display="flex" justifyContent="space-between" width="100%">
-          <Typography variant="body1">To review:  {wrongAnswers.length - reviewIndex}</Typography>
+          <Typography variant="body1">
+            {`To review: ${wrongAnswers.length - reviewIndex}`}
+          </Typography>
         </Box>
       </Box>
     );
   }
+  
 
   function getAnswerOptions(question) {
     const answerOptions = [];
     let currentAnswer = '';
 
     for (const line of question || []) {
-      if (/^[A-F]\./.test(line)) {
+      if (/^[A-Z]\./.test(line)) {
         if (currentAnswer) answerOptions.push(currentAnswer.trim());
         currentAnswer = line;
       } else if (/^Answer/.test(line)) {
