@@ -13,13 +13,13 @@ const QuizComponent = () => {
   const [isReviewingWrongAnswers, setIsReviewingWrongAnswers] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [again, setagain] = useState(0);
-  const WRONG_ANSWER_LIMIT = 4;
+  const WRONG_ANSWER_LIMIT = 3;
 
   // Stop component execution if the condition is met
   if ( again > WRONG_ANSWER_LIMIT) {
     return (
         <div>
-          <p>Those were 5 times</p>
+          <p>Those were 3 times</p>
           <p>That you failed 5 questions</p>
           <p>Give yourself a Rest Time</p>          
           <p>In order to improve your Learning</p>          
@@ -178,7 +178,7 @@ const QuizComponent = () => {
           <Typography variant="body1">Reviewed: {usedQuestions.length-1}</Typography>
           <Typography variant="body1">Correct: {correctAnswers}</Typography>
           <Typography variant="body1">Wrong: {wrongAnswers.length}</Typography>
-          <Typography variant="body1">Limiting: {again}</Typography>
+          <Typography variant="body1">Cycle: {again}</Typography>
          </Box>
       </Box>
     );
@@ -230,7 +230,7 @@ const QuizComponent = () => {
           </>
         )}
         <Box mt={4} display="flex" justifyContent="space-between" width="100%">
-          <Typography variant="body1">Wrong Answer {reviewIndex} of {wrongAnswers.length-1}</Typography>
+          <Typography variant="body1">To review:  {wrongAnswers.length - reviewIndex}</Typography>
         </Box>
       </Box>
     );
