@@ -13,14 +13,34 @@ const QuizComponent = () => {
   const [isReviewingWrongAnswers, setIsReviewingWrongAnswers] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [again, setagain] = useState(0);
-  const WRONG_ANSWER_LIMIT = 3;
+  const WRONG_ANSWER_LIMIT = 4;
+
+  
 
   // Stop component execution if the condition is met
   if ( again > WRONG_ANSWER_LIMIT) {
+    const getBackgroundColor = (length) => {
+      if (length < 275) {
+          return 'yellow';
+      } else if (length >= 275 && length <= 467) {
+          return 'lightblue';
+      } else {
+          return 'green';
+      }
+  };
     return (
         <div>
           <p>Those were 3 times</p>
           <p>That you failed 3 questions</p>
+          <h1
+            style={{
+                color: 'grey',
+                backgroundColor: getBackgroundColor(usedQuestions.length),
+                padding: '10px',
+            }}
+        >
+            But hey, you got {usedQuestions.length} reviewed questions
+        </h1>            
           <p>Give yourself a Rest Time</p>          
           <p>In order to improve your Learning</p>          
           <p>Thanks!</p>          
@@ -200,10 +220,8 @@ const handleContinue = () => {
   function renderReviewPrompt() {
     return (
       <Box id="repaso">
+        <Button variant="contained" color="primary" onClick={startReviewMode}>Review Wrong Answers</Button>
         <Typography variant="h1">Those were 3 wrong answers and a score under 80%</Typography>
-        <Button variant="contained" color="primary" onClick={startReviewMode}>
-  Review Wrong Answers
-</Button>
       </Box>
     );
   }
