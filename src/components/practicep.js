@@ -181,7 +181,7 @@ const handleContinue = () => {
   const answerOptions = getAnswerOptions(currentQuestion);
   const explanationText = getExplanationText(currentQuestion);
   const percentageCorrect = questionsReviewed > 0 ? ((correctAnswers / questionsReviewed) * 100).toFixed(2) : 0;
-  const shouldShowRepaso = percentageCorrect < 80 && wrongAnswers.length > 2;
+  const shouldShowRepaso = percentageCorrect < 90 && wrongAnswers.length > 2;
   return (
     <Box>
       {!quizData ? (
@@ -283,7 +283,7 @@ const handleContinue = () => {
             </Typography>
             
         <Button variant="contained" color="primary" onClick={startReviewMode}>Review Time!</Button>
-        <Typography variant="h3">Those were {wrongAnswers.length} wrong answers and a score under 80%</Typography>
+        <Typography variant="h3">Those were {wrongAnswers.length} wrong answers and a score under 90%</Typography>
       </Box>
     );
   }
