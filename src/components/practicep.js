@@ -172,7 +172,6 @@ const handleContinue = () => {
   setShowExplanation(false); // Reset explanation visibility for the next question
 };
 
-
   const getCorrectAnswers = (question) => {
     const correctAnswerLine = question.find((line) => line.startsWith("Answer"));
     return correctAnswerLine.replace("Answer:", "").replace(".", "").split(",").map((ans) => ans.trim());
