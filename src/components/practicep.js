@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Typography, Checkbox, FormControlLabel, FormControl, Box } from '@mui/material';
-
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import SearchIcon from '@mui/icons-material/Search';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LoopIcon from '@mui/icons-material/Loop';
 const QuizComponent = () => {
   const [quizData, setQuizData] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -227,14 +232,26 @@ const handleContinue = () => {
             </Typography>
           </>
         )}
-        <Box mt={4} display="flex" justifyContent="space-between" width="100%">
-          <Typography variant="body1">Q: {quizData.length}</Typography>
-          <Typography variant="body1">Reviewed: {usedQuestions.length-1}</Typography>
-          <Typography variant="body1">C: {correctAnswers}</Typography>
-          <Typography variant="body1">W: {wrongAnswers.length}</Typography>
-          <Typography variant="body1">Cycle: {again}</Typography>
-          <Typography variant="body1">Score: {percentageCorrect}</Typography>          
-         </Box>
+<Box mt={4} display="flex" justifyContent="space-between" width="100%" alignItems="center">
+  <Typography variant="body1" display="flex" alignItems="center">
+    {quizData.length} <FormatListBulletedIcon fontSize="small" sx={{ ml: 0.5 }} />
+  </Typography>
+  <Typography variant="body1" display="flex" alignItems="center">
+    {usedQuestions.length-1} <SearchIcon fontSize="small" sx={{ ml: 0.5 }} />
+  </Typography>
+  <Typography variant="body1" display="flex" alignItems="center">
+    {correctAnswers} <CheckCircleIcon fontSize="small" sx={{ ml: 0.5 }} />
+  </Typography>
+  <Typography variant="body1" display="flex" alignItems="center">
+    {wrongAnswers.length} <CancelIcon fontSize="small" sx={{ ml: 0.5 }} />
+  </Typography>
+  <Typography variant="body1" display="flex" alignItems="center">
+    {again} <LoopIcon fontSize="small" sx={{ ml: 0.5 }} />
+  </Typography>
+  <Typography variant="body1" display="flex" alignItems="center">
+    {percentageCorrect} <EmojiEventsIcon fontSize="small" sx={{ ml: 0.5 }} />
+  </Typography>
+</Box>
       </Box>
     );
   }
