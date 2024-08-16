@@ -13,39 +13,56 @@ const QuizComponent = () => {
   const [isReviewingWrongAnswers, setIsReviewingWrongAnswers] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [again, setagain] = useState(0);
+  const [noMoreQuestions, setNoMoreQuestions] = useState(false);
   const WRONG_ANSWER_LIMIT = 4;
 
-  
-
-  // Stop component execution if the condition is met
-  if ( again > WRONG_ANSWER_LIMIT) {
+  if (again > WRONG_ANSWER_LIMIT) {
     const getBackgroundColor = (length) => {
       if (length < 275) {
-          return 'yellow';
+        return 'yellow';
       } else if (length >= 275 && length <= 467) {
-          return 'lightblue';
+        return 'lightblue';
       } else {
-          return 'green';
+        return 'green';
       }
-  };
+    };
     return (
-        <div>
-          <p>Those were 3 times</p>
-          <p>That you failed 3 questions</p>
-          <h1
-            style={{
-                color: 'grey',
-                backgroundColor: getBackgroundColor(usedQuestions.length),
-                padding: '10px',
-            }}
+      <Box>
+        <Typography variant="h6">{`Those were ${again} times`}</Typography>
+        <Typography
+          variant="h1"
+          style={{
+            color: 'grey',
+            backgroundColor: getBackgroundColor(usedQuestions.length),
+            padding: '10px',
+          }}
         >
-            But hey, you got {usedQuestions.length} reviewed questions
-        </h1>            
-          <p>Give yourself a Rest Time</p>          
-          <p>In order to improve your Learning</p>          
-          <p>Thanks!</p>          
-        </div>
-      );
+          {`But hey, you got ${usedQuestions.length} reviewed questions`}
+        </Typography>
+        <Typography>Give yourself a Rest Time</Typography>
+        <Typography>In order to improve your Pace Learning</Typography>
+        <Typography>Thanks!</Typography>
+      </Box>
+    );
+  }
+
+  if (noMoreQuestions) {
+    return (
+      <Box>
+        <Typography variant="h6">This is the End of the Road</Typography>
+        <Typography
+          variant="h1"
+          style={{
+            color: 'white',
+            backgroundColor: '#0047AB',
+            padding: '10px',
+          }}
+        >
+          {`You reviewed all the ${usedQuestions.length} available questions`}
+        </Typography>
+        <Typography>Congrats!</Typography>
+      </Box>
+    );
   }
 
   const startReviewMode = () => {
@@ -81,10 +98,10 @@ const QuizComponent = () => {
   const selectRandomQuestion = (data) => {
     const availableQuestions = data.filter((_, index) => !usedQuestions.includes(index));
     if (availableQuestions.length === 0) {
-      resetQuiz(data);
-      return;
+      setNoMoreQuestions(true);  // Set the state to indicate no more questions
+      return; 
     }
-
+    else{
     const randomIndex = Math.floor(Math.random() * availableQuestions.length);
     const selectedQuestion = availableQuestions[randomIndex];
     const originalIndex = data.indexOf(selectedQuestion);
@@ -93,6 +110,7 @@ const QuizComponent = () => {
     setUsedQuestions([...usedQuestions, originalIndex]);
     setSelectedAnswers([]);
     setShowExplanation(false);
+  }
   };
 
   const handleAnswerChange = (event) => {
@@ -102,7 +120,8 @@ const QuizComponent = () => {
         ? prevSelected.filter((ans) => ans !== answer)
         : [...prevSelected, answer]
     );
-  };
+  }
+  ;
 
   const handleConfirm = () => {
     const correctAnswersList = getCorrectAnswers(currentQuestion);
@@ -124,21 +143,24 @@ const QuizComponent = () => {
 
 const handleContinue = () => {
   if (isReviewingWrongAnswers) {
-      setReviewIndex((prev) => {
-        const nextIndex = prev + 1;
-        if (nextIndex < wrongAnswers.length) {
-            setCurrentQuestion(wrongAnswers[nextIndex].questionDetails);
-        } else {
-            setIsReviewingWrongAnswers(false);
-            setReviewIndex(0);
-            setWrongAnswers([]);
-            selectRandomQuestion(quizData);
-            setagain((prev) => prev + 1);
-        }
-        return nextIndex;
-      });
+    setReviewIndex((prev) => {
+      const nextIndex = prev + 1;
+      if (nextIndex < wrongAnswers.length) {
+        setCurrentQuestion(wrongAnswers[nextIndex].questionDetails);
+      } else {
+        // When review is complete, reset states
+        setIsReviewingWrongAnswers(false);
+        setReviewIndex(0);
+        setWrongAnswers([]);
+        selectRandomQuestion(quizData);
+        setagain((prev) => prev + 1);
+      }
+      setSelectedAnswers([]); // Ensure answers are reset
+      setShowExplanation(false); // Reset explanation visibility
+      return nextIndex;
+    });
   } else {
-      selectRandomQuestion(quizData);
+    selectRandomQuestion(quizData);
   }
   setSelectedAnswers([]);
   setShowExplanation(false); // Reset explanation visibility for the next question
@@ -155,7 +177,6 @@ const handleContinue = () => {
   const explanationText = getExplanationText(currentQuestion);
   const percentageCorrect = questionsReviewed > 0 ? ((correctAnswers / questionsReviewed) * 100).toFixed(2) : 0;
   const shouldShowRepaso = percentageCorrect < 80 && wrongAnswers.length > 2;
-  console.log(wrongAnswers)
   return (
     <Box>
       {!quizData ? (
@@ -207,11 +228,12 @@ const handleContinue = () => {
           </>
         )}
         <Box mt={4} display="flex" justifyContent="space-between" width="100%">
-          <Typography variant="body1">Questions: {quizData.length}</Typography>
+          <Typography variant="body1">Q: {quizData.length}</Typography>
           <Typography variant="body1">Reviewed: {usedQuestions.length-1}</Typography>
-          <Typography variant="body1">Correct: {correctAnswers}</Typography>
-          <Typography variant="body1">Wrong: {wrongAnswers.length}</Typography>
+          <Typography variant="body1">C: {correctAnswers}</Typography>
+          <Typography variant="body1">W: {wrongAnswers.length}</Typography>
           <Typography variant="body1">Cycle: {again}</Typography>
+          <Typography variant="body1">Score: {percentageCorrect}</Typography>          
          </Box>
       </Box>
     );
@@ -220,8 +242,31 @@ const handleContinue = () => {
   function renderReviewPrompt() {
     return (
       <Box id="repaso">
-        <Button variant="contained" color="primary" onClick={startReviewMode}>Review Wrong Answers</Button>
-        <Typography variant="h1">Those were 3 wrong answers and a score under 80%</Typography>
+        <Typography variant="h6">{questionText}</Typography>
+          <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
+          <FormControl component="fieldset">
+          {answerOptions.map((option, index) => (
+            <FormControlLabel
+              key={index}
+              control={
+                <Checkbox
+                  checked={selectedAnswers.includes(option)}
+                  onChange={handleAnswerChange}
+                  value={option}
+                  disabled={true}
+                />
+              }
+              label={option}
+            />
+          ))}
+        </FormControl>
+            </Typography>
+            <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
+              {explanationText}
+            </Typography>
+            
+        <Button variant="contained" color="primary" onClick={startReviewMode}>Review Time!</Button>
+        <Typography variant="h3">Those were {wrongAnswers.length} wrong answers and a score under 80%</Typography>
       </Box>
     );
   }
@@ -267,7 +312,7 @@ const handleContinue = () => {
         )}
         <Box mt={4} display="flex" justifyContent="space-between" width="100%">
           <Typography variant="body1">
-            {`To review: ${wrongAnswers.length - reviewIndex}`}
+            {!showExplanation && `To review: ${wrongAnswers.length - reviewIndex}`}
           </Typography>
         </Box>
       </Box>
@@ -302,4 +347,3 @@ const handleContinue = () => {
 };
 
 export default QuizComponent;
-
