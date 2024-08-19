@@ -20,6 +20,7 @@ const QuizComponent = () => {
   const [reviewIndex, setReviewIndex] = useState(0);
   const [again, setagain] = useState(0);
   const [noMoreQuestions, setNoMoreQuestions] = useState(false);
+  const [totalWrongAnswers, setTotalWrongAnswers] = useState(0);
   const WRONG_ANSWER_LIMIT = 4;
 
   if (again > WRONG_ANSWER_LIMIT) {
@@ -34,7 +35,7 @@ const QuizComponent = () => {
     };
     return (
       <Box>
-        <Typography variant="h6">{`Those were ${again} times`}</Typography>
+        <Typography variant="h6">{`Those were ${again} times`}</Typography>        
         <Typography
           variant="h1"
           style={{
@@ -45,8 +46,9 @@ const QuizComponent = () => {
         >
           {`But hey, you got ${usedQuestions.length} reviewed questions`}
         </Typography>
-        <Typography>Give yourself a Rest Time</Typography>
-        <Typography>In order to improve your Pace Learning</Typography>
+        <Typography>Score: {(((usedQuestions.length-totalWrongAnswers)/usedQuestions.length)*100).toFixed(2)} s%</Typography>
+        <Typography>Rest some time</Typography>
+        <Typography>to improve your Learning</Typography>
         <Typography>Thanks!</Typography>
       </Box>
     );
@@ -55,7 +57,8 @@ const QuizComponent = () => {
   if (noMoreQuestions) {
     return (
       <Box>
-        <Typography variant="h6">This is the End of the Road</Typography>
+        <Typography>Congrats!</Typography>
+        <Typography variant="h6">End of the Road</Typography>
         <Typography
           variant="h1"
           style={{
@@ -64,9 +67,9 @@ const QuizComponent = () => {
             padding: '10px',
           }}
         >
-          {`You reviewed all the ${usedQuestions.length} available questions`}
+          {`${usedQuestions.length} reviewed`}
         </Typography>
-        <Typography>Congrats!</Typography>
+        <Typography>Score: {(((usedQuestions.length-totalWrongAnswers)/usedQuestions.length)*100).toFixed(2)} s%</Typography>
       </Box>
     );
   }
@@ -98,7 +101,8 @@ const QuizComponent = () => {
     setIsReviewingWrongAnswers(false);
     setReviewIndex(0);
     setagain(0);
-    selectRandomQuestion(data);
+    setTotalWrongAnswers(0); // Reset total wrong answers
+    selectRandomQuestion(data);    
   };
 
   const selectRandomQuestion = (data) => {
@@ -140,6 +144,7 @@ const QuizComponent = () => {
 
     if (!isCorrect) {
         setWrongAnswers((prev) => [...prev, { questionDetails: currentQuestion, selectedAnswers }]);
+        setTotalWrongAnswers((prev) => prev + 1); // Increment total wrong answers
         setShowExplanation(true);  // Show explanation only if the answer is wrong
     } else {
         setCorrectAnswers((prev) => prev + 1);
@@ -170,6 +175,8 @@ const handleContinue = () => {
   }
   setSelectedAnswers([]);
   setShowExplanation(false); // Reset explanation visibility for the next question
+  console.log(totalWrongAnswers);
+  console.log(usedQuestions.length);  
 };
 
   const getCorrectAnswers = (question) => {
