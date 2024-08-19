@@ -22,12 +22,10 @@ const QuizComponent = () => {
   const [noMoreQuestions, setNoMoreQuestions] = useState(false);
   const [totalWrongAnswers, setTotalWrongAnswers] = useState(0);
   const [TwrongAnswers, setTWrongAnswers] = useState([]);
-  const [jsonDownloaded, setJsonDownloaded] = useState(false);
   const WRONG_ANSWER_LIMIT = 4;
 
 
   const finalScore = () => {
-    if (!jsonDownloaded && totalWrongAnswers.length > 0) {
       const jsonContent = JSON.stringify(TwrongAnswers, null, 2);
       const fileName = `wA${new Date().toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}.json`;
       const blob = new Blob([jsonContent], { type: 'application/json' });
@@ -35,11 +33,6 @@ const QuizComponent = () => {
       link.href = URL.createObjectURL(blob);
       link.download = fileName;
       link.click();
-  
-      // Set the flag to true to prevent further downloads
-      setJsonDownloaded(true);
-    }
-  
     const scorePercentage = (((usedQuestions.length - totalWrongAnswers) / usedQuestions.length) * 100).toFixed(2);
     return (
       <Typography>Score: {scorePercentage} %</Typography>
@@ -127,7 +120,6 @@ const QuizComponent = () => {
     setagain(0);
     setTotalWrongAnswers(0); 
     selectRandomQuestion(data);  
-    setJsonDownloaded(false);  
   };
 
   const selectRandomQuestion = (data) => {
@@ -200,8 +192,6 @@ const handleContinue = () => {
   }
   setSelectedAnswers([]);
   setShowExplanation(false); 
-  console.log(totalWrongAnswers);
-  console.log(usedQuestions.length);  
 };
 
   const getCorrectAnswers = (question) => {
