@@ -21,7 +21,30 @@ const QuizComponent = () => {
   const [again, setagain] = useState(0);
   const [noMoreQuestions, setNoMoreQuestions] = useState(false);
   const [totalWrongAnswers, setTotalWrongAnswers] = useState(0);
+  const [TwrongAnswers, setTWrongAnswers] = useState([]);
+  const [jsonDownloaded, setJsonDownloaded] = useState(false);
   const WRONG_ANSWER_LIMIT = 4;
+
+
+  const finalScore = () => {
+    if (!jsonDownloaded && totalWrongAnswers.length > 0) {
+      const jsonContent = JSON.stringify(TwrongAnswers, null, 2);
+      const fileName = `wA${new Date().toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}.json`;
+      const blob = new Blob([jsonContent], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+  
+      // Set the flag to true to prevent further downloads
+      setJsonDownloaded(true);
+    }
+  
+    const scorePercentage = (((usedQuestions.length - totalWrongAnswers) / usedQuestions.length) * 100).toFixed(2);
+    return (
+      <Typography>Score: {scorePercentage} %</Typography>
+    );
+  };
 
   if (again > WRONG_ANSWER_LIMIT) {
     const getBackgroundColor = (length) => {
@@ -46,7 +69,7 @@ const QuizComponent = () => {
         >
           {`But hey, you got ${usedQuestions.length} reviewed questions`}
         </Typography>
-        <Typography>Score: {(((usedQuestions.length-totalWrongAnswers)/usedQuestions.length)*100).toFixed(2)} s%</Typography>
+        {finalScore()}
         <Typography>Rest some time</Typography>
         <Typography>to improve your Learning</Typography>
         <Typography>Thanks!</Typography>
@@ -69,8 +92,8 @@ const QuizComponent = () => {
         >
           {`${usedQuestions.length} reviewed`}
         </Typography>
-        <Typography>Score: {(((usedQuestions.length-totalWrongAnswers)/usedQuestions.length)*100).toFixed(2)} s%</Typography>
-      </Box>
+        {finalScore()}
+        </Box>
     );
   }
 
@@ -98,17 +121,19 @@ const QuizComponent = () => {
     setQuestionsReviewed(0);
     setCorrectAnswers(0);
     setWrongAnswers([]);
+    setTWrongAnswers([]);
     setIsReviewingWrongAnswers(false);
     setReviewIndex(0);
     setagain(0);
-    setTotalWrongAnswers(0); // Reset total wrong answers
-    selectRandomQuestion(data);    
+    setTotalWrongAnswers(0); 
+    selectRandomQuestion(data);  
+    setJsonDownloaded(false);  
   };
 
   const selectRandomQuestion = (data) => {
     const availableQuestions = data.filter((_, index) => !usedQuestions.includes(index));
     if (availableQuestions.length === 0) {
-      setNoMoreQuestions(true);  // Set the state to indicate no more questions
+      setNoMoreQuestions(true);  
       return; 
     }
     else{
@@ -142,14 +167,15 @@ const QuizComponent = () => {
 
     setQuestionsReviewed((prev) => prev + 1);
 
-    if (!isCorrect) {
+    if (!isCorrect) {        
         setWrongAnswers((prev) => [...prev, { questionDetails: currentQuestion, selectedAnswers }]);
-        setTotalWrongAnswers((prev) => prev + 1); // Increment total wrong answers
-        setShowExplanation(true);  // Show explanation only if the answer is wrong
+        setTotalWrongAnswers((prev) => prev + 1);
+        setTWrongAnswers((prev) => [...prev, { questionDetails: currentQuestion, selectedAnswers }]);         
+        setShowExplanation(true);  
     } else {
         setCorrectAnswers((prev) => prev + 1);
-        handleContinue(); // Automatically continue to the next question if the answer is correct
-    }
+        handleContinue(); 
+  }
 };
 
 const handleContinue = () => {
@@ -159,22 +185,21 @@ const handleContinue = () => {
       if (nextIndex < wrongAnswers.length) {
         setCurrentQuestion(wrongAnswers[nextIndex].questionDetails);
       } else {
-        // When review is complete, reset states
         setIsReviewingWrongAnswers(false);
         setReviewIndex(0);
         setWrongAnswers([]);
         selectRandomQuestion(quizData);
         setagain((prev) => prev + 1);
       }
-      setSelectedAnswers([]); // Ensure answers are reset
-      setShowExplanation(false); // Reset explanation visibility
+      setSelectedAnswers([]); 
+      setShowExplanation(false); 
       return nextIndex;
     });
   } else {
     selectRandomQuestion(quizData);
   }
   setSelectedAnswers([]);
-  setShowExplanation(false); // Reset explanation visibility for the next question
+  setShowExplanation(false); 
   console.log(totalWrongAnswers);
   console.log(usedQuestions.length);  
 };
