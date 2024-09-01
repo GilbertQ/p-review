@@ -208,8 +208,35 @@ const handleContinue = () => {
     <Box>
       {!quizData ? (
         <Box>
-          <input type="file" accept=".json" onChange={handleFileUpload} />
-        </Box>
+        <input type="file" accept=".json" onChange={handleFileUpload} />
+        <div>
+    <p>Structure of the JSON file:</p>
+    <p>  [															</p>
+    <p>    [                                                        </p>
+    <p>      "Question 1: Is this a question?",                     </p>
+    <p>      "A. Yes, is it a question.",                           </p>
+    <p>      "B. No, itsn't a question.",                           </p>
+    <p>      "C. I don't know.",                                    </p>
+    <p>      "Answer: A.",                                          </p>
+    <p>      "Explanation",                                         </p>
+    <p>      "Clearly",                                             </p>
+    <p>      "is it a question."                                    </p>
+    <p>    ],                                                       </p>
+    <p>    [                                                        </p>
+    <p>      "Question 20: Select two known Sci-Fi writers:",       </p>
+    <p>      "A. Wolfang Amadeus Mozart.",                          </p>
+    <p>      "B. Issac Asimov.",                                    </p>
+    <p>      "C. Arthur C. Clarke.",                                </p>
+    <p>      "D. Antonio Vivaldi.",                                 </p>
+    <p>      "Answer: B, C.",                                       </p>
+    <p>      "Explanation",                                         </p>
+    <p>      "Thew are some well known",                            </p>
+    <p>      "writers of this genre."                               </p>
+    <p>    ]                                                        </p>
+    <p>  ]                                                          </p>
+</div>
+      </Box>
+      
       ) : (
         <>
           {!shouldShowRepaso && !isReviewingWrongAnswers && renderQuestionBox()}
