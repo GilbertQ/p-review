@@ -215,7 +215,7 @@ const handleContinue = () => {
         {`    [													
                 [                                                       
                   "Question 1: Is this a question?",                     
-                  "A. Yes, is it a question.",                          
+                  "A. Yes, it is a question, indeed.",                          
                   "B. No, it isn't a question.",                        
                   "C. I don't know.",                                    
                   "Answer: A.",                                          
@@ -252,7 +252,8 @@ const handleContinue = () => {
   function renderQuestionBox() {
     return (
       <Box id="preguntas">
-        <Typography variant="h6">{questionText}</Typography>
+        <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
+{questionText}</Typography>
         <FormControl component="fieldset">
           {answerOptions.map((option, index) => (
             <FormControlLabel
@@ -307,37 +308,43 @@ const handleContinue = () => {
     );
   }
 
-  function renderReviewPrompt() {
-    return (
-      <Box id="repaso">
-        <Typography variant="h6">{questionText}</Typography>
-          <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
-          <FormControl component="fieldset">
-          {answerOptions.map((option, index) => (
-            <FormControlLabel
-              key={index}
-              control={
-                <Checkbox
-                  checked={selectedAnswers.includes(option)}
-                  onChange={handleAnswerChange}
-                  value={option}
-                  disabled={true}
-                />
-              }
-              label={option}
-            />
-          ))}
-        </FormControl>
-            </Typography>
-            <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
-              {explanationText}
-            </Typography>
-            
-        <Button variant="contained" color="primary" onClick={startReviewMode}>Review Time!</Button>
-        <Typography variant="h3">Those were {wrongAnswers.length} wrong answers and a score under 90%</Typography>
-      </Box>
-    );
-  }
+function renderReviewPrompt() {
+  return (
+    <Box id="repaso">
+      <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
+        {questionText}
+      </Typography>
+
+      <FormControl component="fieldset">
+        {answerOptions.map((option, index) => (
+          <FormControlLabel
+            key={index}
+            control={
+              <Checkbox
+                checked={selectedAnswers.includes(option)}
+                onChange={handleAnswerChange}
+                value={option}
+                disabled={true}
+              />
+            }
+            label={option}
+          />
+        ))}
+      </FormControl>
+
+     <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>
+        {explanationText}
+      </Typography>
+
+      <Button variant="contained" color="primary" onClick={startReviewMode}>
+        Review Time!
+      </Button>
+      <Typography variant="h3">
+        Those were {wrongAnswers.length} wrong answers and a score under 90%
+      </Typography>
+    </Box>
+  );
+}
 
   function renderWrongAnswerReview() {
     const currentReview = wrongAnswers[reviewIndex];
@@ -347,7 +354,7 @@ const handleContinue = () => {
   
     return (
       <Box id="preguntas">
-        <Typography variant="h6">{questionText}</Typography>
+        <Typography variant="h6" style={{ whiteSpace: 'pre-wrap' }}>{questionText}</Typography>
         <FormControl component="fieldset">
           {answerOptions.map((option, index) => (
             <FormControlLabel
